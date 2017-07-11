@@ -1,0 +1,124 @@
+apply plugin: 'com.android.application'
+
+android {
+    compileSdkVersion 25
+    buildToolsVersion "25.0.2"
+    defaultConfig {
+        applicationId "me.next.gradleplugin"
+        minSdkVersion 15
+        targetSdkVersion 25
+        versionCode 1
+        versionName "1.0"
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+}
+
+dependencies {
+    compile fileTree(dir: 'libs', include: ['*.jar'])
+    androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
+        exclude group: 'com.android.support', module: 'support-annotations'
+    })
+    compile 'com.android.support:appcompat-v7:25.3.1'
+    compile 'com.android.support.constraint:constraint-layout:1.0.2'
+    testCompile 'junit:junit:4.12'
+}
+
+buildscript {
+    repositories {
+        maven {
+            url uri('../repo')
+        }
+    }
+    dependencies {
+        classpath 'me.next.gradle.plugin:library:1.0.0'
+    }
+}
+apply plugin: 'plugin.test'
+
+// see: http://www.cnblogs.com/davenkin/p/gradle-learning-2.html
+// “<<”表示追加的意思
+task helloWorld << {
+    print "Hello World!"
+}
+
+// doLast 有同样的效果
+task hello2 {
+    doLast {
+        println 'hello2'}
+}
+// 向 Task 的最前面加入执行过程
+task hello3 {
+    doFirst {
+        println 'hello3'}
+}
+
+task showTasks {
+    println tasks.class
+    println tasks.size()
+}
+
+//  ############### gradle 语法 ###############
+task showDescription1 << {
+    description = 'this is task showDescription'
+    println description
+}
+
+
+task showDescription2 << {
+    println description
+}
+showDescription2.description = 'this is task showDescription'
+
+// 对于showDescription3，我们是在一个和它同名的方法中设置description
+task showDescription3 << {
+    println description
+}
+
+showDescription3 {
+    description = 'this is task showDescription'
+}
+
+// ############### 闭包 ###############
+class Child {
+    public String name
+}
+
+class Parent {
+
+    Child child = new Child()
+
+    void configChild(Closure c) {
+        c.delegate = child //接受的闭包的 delegate 设置成 child
+        c.setResolveStrategy Closure.DELEGATE_FIRST // 闭包的 ResolveStrategy 设置成了 DELEGATE_FIRST
+        c()
+    }
+}
+
+def parent = new Parent()
+parent.configChild {
+    name = "Child Name"
+}
+
+println parent.child.name
+
+
+version = 'this is the project version'
+description = 'this is the project description'
+
+// ############### Property ###############
+/**
+ * 在打印description时，我们使用了project.description，而不是直接使用description。
+ * 原因在于，Project和Task都拥有description属性，而定义Task的闭包将delegate设置成了当前的Task，
+ * 故如果直接使用description，此时打印的是showProjectProperties的description，
+ * 而不是Project的，所以我们需要显式地指明project
+ */
+task showProjectProperties << {
+    println version
+    println project.description
+}
