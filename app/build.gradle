@@ -122,3 +122,16 @@ task showProjectProperties << {
     println version
     println project.description
 }
+
+/**
+ * 执行结束后
+ */
+afterEvaluate {
+    android.applicationVariants.all { variant ->
+        variant.assemble.doLast {
+            println 'MyTask : ' + variant.buildType.name
+            println 'MyTask : ' + projectDir + '/build/outputs/channels'
+            println 'MyTask : ' + variant.outputs.get(0).outputFile
+        }
+    }
+}
